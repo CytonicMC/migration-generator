@@ -15,6 +15,7 @@ class MigrationGeneratorPlugin : Plugin<Project> {
         extension.databases.convention(listOf("environment"))
         extension.migrationBasePath.convention("dbmigration")
         extension.resourcesPath.convention("src/main/resources")
+        extension.entityPackages.convention(listOf("net.cytonic"))
         project.tasks.register("generateMigrations") {
             group = "migrations"
             description = "Generate migrations for all configured databases"
