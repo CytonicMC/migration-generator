@@ -1,10 +1,10 @@
 package net.cytonic.migrationGenerator
 
+import io.ebean.DatabaseFactory
 import io.ebean.annotation.Platform
 import io.ebean.config.DatabaseConfig
+import io.ebean.datasource.DataSourceConfig
 import io.ebean.dbmigration.DbMigration
-import java.io.IOException
-import kotlin.system.exitProcess
 
 /**
  * Main class for generating Ebean migrations. Called by the Gradle plugin tasks.
@@ -17,25 +17,42 @@ object MigrationGenerator {
         platform: Platform,
         basePath: String,
         resourcesPath: String,
-        entityClasses: List<Class<*>>
+        entityClasses: Set<Class<*>>
     ) {
-        val migration = DbMigration.create()
+        System.setProperty("ebean.ignoreExtraDdl", "false")
+        System.setProperty("datasource.default", "h2")
+
         val config = DatabaseConfig()
-        config.name = database
+        config.name = "migration_$database"
+        config.isDefaultServer = false
+        config.isRegister = true
+        config.packages = emptyList()
+        config.setLoadModuleInfo(false)
+        config.disableClasspathSearch(true)
+        config.databasePlatformName = platform.name.lowercase()
+
+        val dsConfig = DataSourceConfig()
+        dsConfig.driver = "org.h2.Driver"
+        dsConfig.url = "jdbc:h2:mem:test"
+        dsConfig.username = "sa"
+        dsConfig.password = ""
+        config.setDataSourceConfig(dsConfig)
 
         entityClasses.forEach { config.addClass(it) }
 
-        migration.setServerConfig(config)
-        migration.setPlatform(platform)
-        migration.setPathToResources(resourcesPath)
-        migration.setMigrationPath("$basePath/$pluginId/$database")
+        val ebeanServer = DatabaseFactory.create(config)
 
         try {
+            val migration = DbMigration.create()
+            migration.setServer(ebeanServer)
+            migration.setPlatform(platform)
+            migration.setPathToResources(resourcesPath)
+            migration.setMigrationPath("$basePath/$pluginId/$database")
+            migration.setStrictMode(true)
+
             migration.generateMigration()
-        } catch (e: IOException) {
-            System.err.println("✗ Failed to generate migration: " + e.message)
-            e.printStackTrace()
-            exitProcess(1)
+        } finally {
+            ebeanServer.shutdown()
         }
     }
 }

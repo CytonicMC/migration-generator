@@ -16,6 +16,7 @@ dependencies {
     implementation("io.ebean:ebean-ddl-generator:17.2.0")
     implementation("io.ebean:ebean-migration:14.3.0")
     implementation("io.github.classgraph:classgraph:4.8.184")
+    implementation("com.h2database:h2:2.4.240")
 }
 
 gradlePlugin {

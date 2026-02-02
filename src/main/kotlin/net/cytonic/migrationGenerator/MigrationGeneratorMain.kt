@@ -32,8 +32,8 @@ object MigrationGeneratorMain {
         println("Migration generated for $database database")
     }
 
-    private fun findEntitiesForDatabase(targetDatabase: String, packages: List<String>): List<Class<*>> {
-        val entities = mutableListOf<Class<*>>()
+    private fun findEntitiesForDatabase(targetDatabase: String, packages: List<String>): Set<Class<*>> {
+        val entities = mutableSetOf<Class<*>>()
         val classLoader = Thread.currentThread().contextClassLoader
 
         packages.forEach { packageName ->
