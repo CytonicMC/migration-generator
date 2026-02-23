@@ -38,7 +38,11 @@ class MigrationGeneratorPlugin : Plugin<Project> {
             val sourceSets = project.extensions.getByType(SourceSetContainer::class.java)
             val mainSourceSet = sourceSets.getByName("main")
 
-            classpath = project.buildscript.configurations.getByName("classpath") + mainSourceSet.runtimeClasspath
+            classpath = mainSourceSet.output +
+                    project.configurations.getByName("runtimeClasspath") +
+                    project.configurations.getByName("compileClasspath") +
+                    project.buildscript.configurations.getByName("classpath")
+
 
             mainClass.set("net.cytonic.migrationGenerator.MigrationGeneratorMain")
 
